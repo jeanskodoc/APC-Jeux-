@@ -3130,13 +3130,14 @@ Auth.htmlCreation = function () {
   if (Auth.credsCreation) {
     var c = Auth.credsCreation;
     h += '<div class="auth-creds auth-creds-fin">';
-    h += '<p class="grand">' + (c.existe ? '🙋 Compte déjà existant — voici tes identifiants' : '🎉 Compte créé ! Note bien tes identifiants') + '</p>';
+    h += '<p class="grand">' + (c.existe ? '🙋 Compte déjà existant — te voilà reconnecté(e) !' : '🎉 Compte créé et sauvegardé — tu es connecté(e) !') + '</p>';
     h += '<div class="auth-creds-boite">';
     h += '<small>Identification</small><code>' + esc(c.identifiant) + '</code>';
     h += '<small>Mot de passe</small><code>' + esc(c.motDePasse) + '</code>';
     h += '</div>';
     h += '<p class="auth-creds-note">Générés à partir de ton nom et prénom — tu pourras toujours les retrouver avec « Identifiants oubliés ».</p>';
-    h += '<button type="button" class="btn btn-primaire btn-bloc btn-grand" onclick="Auth.seConnecterCree()">🔓 Me connecter maintenant</button>';
+    h += '<p class="auth-creds-note" style="font-weight:bold">✅ Compte sauvegardé sur cet appareil : à ta prochaine visite, tu seras reconnecté(e) automatiquement.</p>';
+    h += '<button type="button" class="btn btn-primaire btn-bloc btn-grand" onclick="Auth.entrerJeu()">🚀 Entrer dans le jeu</button>';
     h += '<button type="button" class="btn btn-contour btn-bloc" onclick="Auth.credsCreation=null;Auth.rendre()">← Créer un autre compte</button>';
     h += '</div></form>';
     return h;
@@ -3209,9 +3210,24 @@ Auth.creer = function (e) {
     return false;
   }
   var res = Auth.creerCompte(nom, prenom, Auth.role, classe.trim());
-  Auth.credsCreation = { identifiant: res.compte.identifiant, motDePasse: res.compte.motDePasse, existe: res.existe, session: res.compte };
+  // Connexion automatique : la session est sauvegardée dès la création du
+  // compte — à la prochaine ouverture, l’utilisateur est reconnecté d’office
+  // sans retaper ses identifiants.
+  var ses = Auth.connecter(res.compte.identifiant, res.compte.motDePasse);
+  Auth.credsCreation = {
+    identifiant: res.compte.identifiant, motDePasse: res.compte.motDePasse,
+    existe: res.existe, session: ses.ok ? ses.session : null,
+  };
   Auth.rendre();
   return false;
+};
+
+/** Entre dans le jeu : la session a déjà été sauvegardée à la création. */
+Auth.entrerJeu = function () {
+  var c = Auth.credsCreation;
+  if (!c) return;
+  if (c.session) { Auth.apresConnexion(c.session); return; }
+  Auth.seConnecterCree(); // secours (session non mémorisée)
 };
 
 Auth.seConnecterCree = function () {
