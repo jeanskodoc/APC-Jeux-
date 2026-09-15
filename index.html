@@ -252,6 +252,10 @@ input[type="range"] { flex: 1; accent-color: var(--vert); min-height: 44px; }
 .avatar-joueur { width: clamp(28px, 4vw, 38px); height: clamp(28px, 4vw, 38px); border-radius: 50%; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: clamp(.8rem, 2vw, 1rem); flex-shrink: 0; }
 .avatar-gauche { background: linear-gradient(135deg, #059669, #14b8a6); }
 .avatar-droite { background: linear-gradient(135deg, #f59e0b, #f97316); }
+.avatar-c3 { background: linear-gradient(135deg, #0284c7, #06b6d4); }
+.avatar-c4 { background: linear-gradient(135deg, #e11d48, #f43f5e); }
+.colonne-c3 { border-color: #0284c7; background: linear-gradient(180deg, #f0f9ff, #fff 90px); }
+.colonne-c4 { border-color: #e11d48; background: linear-gradient(180deg, #fff1f2, #fff 90px); }
 .colonne-tete .infos { min-width: 0; flex: 1; }
 .colonne-tete .infos b { display: block; font-size: clamp(.8rem, 2.2vw, .95rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .colonne-tete .infos small { color: var(--gris); font-size: clamp(.62rem, 1.8vw, .74rem); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -262,6 +266,20 @@ input[type="range"] { flex: 1; accent-color: var(--vert); min-height: 44px; }
 .colonne-joueur.terminee { opacity: .92; }
 .carte-attente { text-align: center; padding: 1.4rem .6rem; color: var(--gris); font-size: .88rem; }
 .carte-attente .grand { font-size: 2rem; display: block; margin-bottom: .4rem; }
+/* ---------- PODIUM — les 3 meilleurs après le jeu ---------- */
+.podium-carte { margin-top: 1rem; }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: .7rem; padding: .4rem 0 .2rem; flex-wrap: wrap; }
+.podium-groupe { display: flex; gap: .45rem; align-items: flex-end; }
+.podium-marche { display: flex; flex-direction: column; align-items: center; gap: .12rem; min-width: 74px; max-width: 110px; }
+.podium-medaille { font-size: 1.25rem; line-height: 1; }
+.podium-nom { font-weight: 800; font-size: .78rem; max-width: 104px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium-pts { font-size: .68rem; color: var(--gris); font-weight: 700; font-variant-numeric: tabular-nums; }
+.podium-colonne { width: 100%; border-radius: 8px 8px 0 0; box-shadow: inset 0 -3px 6px rgba(0,0,0,.08); }
+.podium-marche.p1 .podium-colonne { height: 72px; background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+.podium-marche.p2 .podium-colonne { height: 50px; background: linear-gradient(180deg, #cbd5e1, #94a3b8); }
+.podium-marche.p3 .podium-colonne { height: 36px; background: linear-gradient(180deg, #d97706, #b45309); }
+.podium-rang { font-size: .64rem; font-weight: 900; color: var(--gris); }
+
 /* Les colonnes restent côte à côte sur TOUS les écrans (consigne « même écran, gauche/droite ») ;
    sur très petit écran on compacte au lieu d'empiler. */
 @media (max-width: 620px) {
@@ -298,6 +316,12 @@ input[type="range"] { flex: 1; accent-color: var(--vert); min-height: 44px; }
 .carte-eleve h3 { font-size: .92rem; display: flex; align-items: center; gap: .4rem; margin-bottom: .15rem; }
 .carte-eleve .position { font-size: .72rem; color: var(--gris); margin-bottom: .6rem; display: block; }
 .carte-eleve label { font-size: .74rem; font-weight: 700; color: var(--gris); display: block; margin: .45rem 0 .2rem; }
+
+/* Joueurs 3 et 4 du duel côte à côte (2 à 4 joueurs) */
+.carte-eleve.trois { border-color: #0284c7; background: #f0f9ff; }
+.carte-eleve.quatre { border-color: #e11d48; background: #fff1f2; }
+.retirer-eleve { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #e11d48; background: #fff1f2; color: #e11d48; font-weight: 900; font-size: .8rem; cursor: pointer; line-height: 1; }
+.retirer-eleve:hover { background: #ffe4e6; }
 
 /* ---------- Duel fin ---------- */
 .banniere-verdict { border-radius: var(--rayon-lg); border: 2px solid var(--bordure); background: #fff; padding: clamp(1.2rem, 4vw, 2rem); text-align: center; box-shadow: var(--ombre); }
@@ -481,7 +505,7 @@ body.mode-auth .entete { display: none; }
         <span class="badge-stat">📚 271 leçons officielles</span>
         <span class="badge-stat">🎓 11 classes (6e → Tle)</span>
         <span class="badge-stat">🧩 6 types de jeux</span>
-        <span class="badge-stat">⚔️ Duel 2 joueurs</span>
+        <span class="badge-stat">⚔️ Duel 2 à 4 joueurs</span>
         <span class="badge-stat">📲 Résultat par WhatsApp</span>
       </div>
       <div id="zone-hero-illu" class="hero-illu" aria-hidden="true"></div>
@@ -496,7 +520,7 @@ body.mode-auth .entete { display: none; }
       <button class="tuile tuile-ambre" onclick="UI.demarrerDuel()">
         <span class="tuile-icone">⚔️</span>
         <b>Duel — même écran</b>
-        <span>🔒 Lancé par l’enseignant : 2 élèves s’affrontent, un à gauche et un à droite, vainqueur du tournoi à la fin.</span>
+        <span>🔒 Lancé par l’enseignant : de 2 à 4 élèves jouent côte à côte (une colonne chacun), podium des 3 meilleurs à la fin.</span>
       </button>
       <button class="tuile tuile-gris" onclick="UI.aller('reglages')">
         <span class="tuile-icone">⚙️</span>
@@ -1947,15 +1971,25 @@ function construireMessageSolo(config, result, jeuGen) {
 function construireMessageDuel(config, finDuel) {
   var date = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   var gti = gameTypeParId(config.gameType);
+  var lignesJoueurs;
+  if (finDuel.joueurs && finDuel.joueurs.length) {
+    // Duel multi-joueurs (2 à 4 élèves) : liste dans l'ordre du classement
+    lignesJoueurs = finDuel.joueurs.map(function (j, i) {
+      return '👤 ' + (i + 1) + '. ' + j.nom + ' : ' + j.score + '/' + finDuel.total;
+    });
+  } else {
+    lignesJoueurs = [
+      '👤 ' + finDuel.j1.nom + ' (élève 1 — à gauche) : ' + finDuel.j1.score + '/' + finDuel.total,
+      '👤 ' + finDuel.j2.nom + ' (élève 2 — à droite) : ' + finDuel.j2.score + '/' + finDuel.total,
+    ];
+  }
   var lignes = [
     '⚔️ *JeuxAPC Togo — Résultat du duel (même écran)*', '',
     '📚 Matière : ' + config.matiereLabel + ' — Classe : ' + config.classeLabel,
     finDuel.leconTitre ? '📘 Leçon commune : « ' + finDuel.leconTitre + ' »' : (config.theme && config.theme.trim() ? '📘 Thème : ' + config.theme.trim() : '📘 Thème : programme général'),
     '🎮 Jeu : ' + (gti ? gti.label : config.gameType) + ' — Difficulté : ' + config.difficulty,
     '🗓 Date : ' + date, '',
-    '👤 ' + finDuel.j1.nom + ' (élève 1 — à gauche) : ' + finDuel.j1.score + '/' + finDuel.total,
-    '👤 ' + finDuel.j2.nom + ' (élève 2 — à droite) : ' + finDuel.j2.score + '/' + finDuel.total, '',
-  ];
+  ].concat(lignesJoueurs).concat(['']);
   if (finDuel.egalite) lignes.push('🤝 Verdict : Égalité parfaite !');
   else lignes.push('🏆 Vainqueur du tournoi : ' + finDuel.vainqueurNom + (finDuel.departageTemps ? ' (départage au chrono le plus court)' : ''));
   lignes.push('', '— Envoyé automatiquement par JeuxAPC Togo 🇹🇬');
@@ -3347,7 +3381,7 @@ Duel.rendreVerrouille = function (session) {
   h += '<div style="font-size:2.6rem" aria-hidden="true">🔒⚔️</div>';
   h += '<div class="carte-titre">Le duel est lancé par l’enseignant</div>';
   if (!session) {
-    h += '<p class="carte-sous">Tu n’es pas connecté(e). Seul un compte <b>Enseignant</b> peut organiser un duel entre deux élèves : connecte-toi avec ce rôle, puis reviens lancer le tournoi.</p>';
+    h += '<p class="carte-sous">Tu n’es pas connecté(e). Seul un compte <b>Enseignant</b> peut organiser un duel entre 2 à 4 élèves : connecte-toi avec ce rôle, puis reviens lancer le tournoi.</p>';
     h += '<button type="button" class="btn btn-primaire btn-bloc" onclick="UI.aller(\'auth\');Auth.rendre()">🔐 Se connecter</button>';
   } else {
     h += '<p class="carte-sous">Connecté(e) : <b>' + esc(session.prenom + ' ' + session.nom) + '</b> (élève). Demande à ton enseignant de lancer le duel depuis son compte — il t’indiquera quoi faire.</p>';
@@ -3362,50 +3396,147 @@ Duel.rendreVerrouille = function (session) {
 Duel.rendreSetup = function () {
   clearInterval(S.duel && S.duel.int);
   S.duel = null;
+  if (!S.duelSetup || S.duelSetup.length < 2) S.duelSetup = [{ nom: '', classe: '' }, { nom: '', classe: '' }];
   var roster = lireRoster();
   var optionsRoster = roster.map(function (e) { return '<option value="' + esc(e.nom) + '">' + esc(e.classe || '') + '</option>'; }).join('');
   var h = '<div class="carte">';
-  h += '<div class="carte-titre">⚔️ Duel sur le même écran — lancé par l’enseignant</div>';
-  h += '<p class="carte-sous">Les deux questionnaires seront <b>similaires</b> : même thème, même leçon officielle, même type de jeu, même difficulté (mais des valeurs différentes pour une revanche loyale). Élève 1 joue dans la colonne de <b style="color:var(--vert-fonce)">GAUCHE</b>, élève 2 dans la colonne de <b style="color:var(--or)">DROITE</b>.</p>';
+  h += '<div class="carte-titre">⚔️ Duel sur le même écran — 2 à 4 joueurs (lancé par l’enseignant)</div>';
+  h += '<p class="carte-sous">Chaque élève joue dans SA colonne, côte à côte sur le même écran (maximum : <b>4 joueurs</b>). Les questionnaires seront <b>similaires</b> : même thème, même leçon officielle, même type de jeu, même difficulté — mais des énoncés différents pour un duel équitable. À la fin, le <b>podium des 3 meilleurs</b> est affiché 🏆.</p>';
   h += '<datalist id="dl-roster">' + optionsRoster + '</datalist>';
   h += '<div class="duel-setup">';
-  h += '<div class="carte-eleve gauche"><h3>🟢 Élève 1</h3><span class="position">Colonne de GAUCHE</span>';
-  h += '<label for="nom-j1">Nom de l’élève 1</label><input class="champ" id="nom-j1" list="dl-roster" placeholder="Ex : Aya Tchala" maxlength="40">';
-  h += '<label for="classe-j1">Classe</label><input class="champ" id="classe-j1" placeholder="Ex : 5ème B" maxlength="20"></div>';
-  h += '<div class="carte-eleve droite"><h3>🟠 Élève 2</h3><span class="position">Colonne de DROITE</span>';
-  h += '<label for="nom-j2">Nom de l’élève 2</label><input class="champ" id="nom-j2" list="dl-roster" placeholder="Ex : Koffi Mensah" maxlength="40">';
-  h += '<label for="classe-j2">Classe</label><input class="champ" id="classe-j2" placeholder="Ex : 5ème B" maxlength="20"></div>';
+  S.duelSetup.forEach(function (e, i) { h += Duel.carteSetup(i, e); });
+  h += '</div>';
+  // Ajouter des joueurs : 2 minimum, 4 maximum (côte à côte)
+  if (S.duelSetup.length < 4) {
+    h += '<div style="margin-top:.7rem"><button type="button" class="btn btn-contour" onclick="Duel.ajouterSetup()">＋ Ajouter un joueur (' + S.duelSetup.length + '/4)</button></div>';
+  } else {
+    h += '<p class="aide-reglage" style="margin-top:.5rem">Nombre maximum atteint : 4 joueurs joueront côte à côte.</p>';
+  }
+  // AJOUT D’UN NOUVEAU JOUEUR à la liste enregistrée, directement ici
+  h += '<div style="margin-top:.8rem;border:1.5px dashed var(--vert);border-radius:12px;padding:.8rem">';
+  h += '<p style="font-weight:800;margin:0 0 .45rem">➕ Ajouter un nouveau joueur à la liste enregistrée</p>';
+  h += '<div style="display:grid;gap:.5rem;grid-template-columns:1fr 1fr">';
+  h += '<input class="champ" id="nouv-nom" placeholder="Nom du nouveau joueur" maxlength="40">';
+  h += '<input class="champ" id="nouv-classe" placeholder="Classe (facultatif)" maxlength="20"></div>';
+  h += '<div style="margin-top:.5rem"><button type="button" class="btn btn-contour" onclick="Duel.ajouterNouveauJoueur()">＋ Enregistrer ce joueur</button></div>';
+  h += '<p class="aide-reglage">💡 Le joueur ajouté devient sélectionnable pour CHAQUE élève du duel, et mémorisé pour les prochains duels (liste gérable dans ⚙️ Réglages).</p>';
   h += '</div>';
   h += '<div id="zone-config-duel"></div>';
-  h += '<div class="note-info">ℹ️ Cette version fichier propose le duel sur le même écran (fonctionne hors ligne). Le duel en ligne avec code d’invitation entre deux appareils est disponible dans l’application web JeuxAPC Togo.</div>';
+  h += '<div class="note-info">ℹ️ Cette version fichier propose le duel sur le même écran (fonctionne hors ligne). Le duel en ligne avec lien d’invitation entre deux appareils est disponible dans l’application web JeuxAPC Togo.</div>';
   h += '<div style="margin-top:.6rem"><button type="button" class="btn btn-contour btn-bloc" onclick="UI.aller(\'accueil\')">🏠 Retour à l’accueil</button></div>';
   h += '</div>';
   document.getElementById('zone-duel').innerHTML = h;
   Config.rendre('zone-config-duel');
 };
 
+/** Carte de saisie d’un élève (i = 0 → colonne 1 … 3 → colonne 4). */
+Duel.carteSetup = function (i, e) {
+  var classes = ['gauche', 'droite', 'trois', 'quatre'];
+  var emojis = ['🟢', '🟠', '🔵', '🩷'];
+  var cotes = ['Colonne de GAUCHE', 'Colonne de DROITE', 'Colonne 3 · en bas à gauche', 'Colonne 4 · en bas à droite'];
+  var h = '<div class="carte-eleve ' + (classes[i] || 'gauche') + '" style="position:relative">';
+  if (S.duelSetup.length > 2) {
+    h += '<button type="button" class="retirer-eleve" onclick="Duel.retirerSetup(' + i + ')" aria-label="Retirer l’élève ' + (i + 1) + '">✕</button>';
+  }
+  h += '<h3>' + (emojis[i] || '🟢') + ' Élève ' + (i + 1) + '</h3><span class="position">' + (cotes[i] || 'Colonne ' + (i + 1)) + '</span>';
+  h += '<label for="nom-j' + (i + 1) + '">Nom de l’élève ' + (i + 1) + '</label><input class="champ" id="nom-j' + (i + 1) + '" list="dl-roster" value="' + esc(e.nom) + '" placeholder="Ex : Aya Tchala" maxlength="40" oninput="Duel.setupChamp(' + i + ',\'nom\',this.value)">';
+  h += '<label for="classe-j' + (i + 1) + '">Classe</label><input class="champ" id="classe-j' + (i + 1) + '" value="' + esc(e.classe) + '" placeholder="Ex : 5ème B" maxlength="20" oninput="Duel.setupChamp(' + i + ',\'classe\',this.value)">';
+  h += '<label for="roster-j' + (i + 1) + '">Ou choisir un joueur enregistré</label><select class="champ" id="roster-j' + (i + 1) + '" onchange="Duel.choisir(' + i + ',this.value)">' + Duel.optionsRoster() + '</select></div>';
+  return h;
+};
+
+/* ---------- SAISIE DYNAMIQUE DES ÉLÈVES : 2 À 4 JOUEURS CÔTE À CÔTE ---------- */
+Duel.setupChamp = function (i, champ, v) {
+  if (S.duelSetup && S.duelSetup[i]) S.duelSetup[i][champ] = v;
+};
+
+Duel.ajouterSetup = function () {
+  if (!S.duelSetup) S.duelSetup = [{ nom: '', classe: '' }, { nom: '', classe: '' }];
+  if (S.duelSetup.length >= 4) { UI.toast('Nombre maximum atteint : 4 joueurs côte à côte.'); return; }
+  S.duelSetup.push({ nom: '', classe: '' });
+  Duel.rendreSetup();
+};
+
+Duel.retirerSetup = function (i) {
+  if (!S.duelSetup || S.duelSetup.length <= 2) return;
+  S.duelSetup.splice(i, 1);
+  Duel.rendreSetup();
+};
+
+Duel.optionsRoster = function () {
+  var h = '<option value="-1">— Choisir un joueur enregistré —</option>';
+  lireRoster().forEach(function (e, i) {
+    h += '<option value="' + i + '">' + esc(e.nom) + (e.classe ? ' · ' + esc(e.classe) : '') + '</option>';
+  });
+  return h;
+};
+
+Duel.choisir = function (i, idx) {
+  var n = parseInt(idx, 10);
+  var sel = document.getElementById('roster-j' + (i + 1));
+  if (sel) sel.value = '-1';
+  if (isNaN(n) || n < 0) return;
+  var e = lireRoster()[n];
+  if (!e) return;
+  var nomEl = document.getElementById('nom-j' + (i + 1));
+  var classeEl = document.getElementById('classe-j' + (i + 1));
+  if (nomEl) nomEl.value = e.nom;
+  if (classeEl) classeEl.value = e.classe || '';
+  if (S.duelSetup && S.duelSetup[i]) { S.duelSetup[i].nom = e.nom; S.duelSetup[i].classe = e.classe || ''; }
+};
+
+Duel.ajouterNouveauJoueur = function () {
+  var nom = (document.getElementById('nouv-nom').value || '').trim();
+  var classe = (document.getElementById('nouv-classe').value || '').trim();
+  if (nom.length < 2) { UI.toast('Saisis un nom d’au moins 2 lettres.'); return; }
+  var deja = lireRoster().some(function (e) { return sansAccents(e.nom) === sansAccents(nom); });
+  if (deja) { UI.toast('⚠️ ' + nom + ' est déjà dans la liste des joueurs.'); return; }
+  ajouterRoster(nom, classe);
+  // Met à jour TOUTES les listes déroulantes SANS effacer les noms déjà saisis
+  (S.duelSetup || []).forEach(function (_, i) {
+    var sel = document.getElementById('roster-j' + (i + 1));
+    if (sel) { sel.innerHTML = Duel.optionsRoster(); sel.value = '-1'; }
+  });
+  document.getElementById('nouv-nom').value = '';
+  document.getElementById('nouv-classe').value = '';
+  UI.toast('✅ ' + nom + ' ajouté(e) : tu peux le choisir pour chaque élève du duel.');
+};
+
 Duel.apresConfig = function () {
-  var n1 = (document.getElementById('nom-j1').value || '').trim();
-  var n2 = (document.getElementById('nom-j2').value || '').trim();
-  var c1 = (document.getElementById('classe-j1').value || '').trim();
-  var c2 = (document.getElementById('classe-j2').value || '').trim();
-  if (n1.length < 2 || n2.length < 2) { UI.toast('Saisis le nom des DEUX élèves (au moins 2 lettres chacun).'); return; }
-  if (sansAccents(n1) === sansAccents(n2)) { UI.toast('Les deux élèves doivent avoir des noms différents.'); return; }
-  ajouterRoster(n1, c1); ajouterRoster(n2, c2);
+  var setup = S.duelSetup || [];
+  var eleves = [];
+  setup.forEach(function (e, i) {
+    var nomEl = document.getElementById('nom-j' + (i + 1));
+    var classeEl = document.getElementById('classe-j' + (i + 1));
+    eleves.push({
+      nom: (nomEl ? nomEl.value : (e.nom || '')).trim(),
+      classe: (classeEl ? classeEl.value : (e.classe || '')).trim(),
+    });
+  });
+  if (eleves.length < 2) { UI.toast('Il faut au moins DEUX élèves pour lancer le duel.'); return; }
+  if (eleves.some(function (e) { return e.nom.length < 2; })) { UI.toast('Saisis le nom de CHAQUE élève (au moins 2 lettres chacun).'); return; }
+  var vus = {};
+  for (var i = 0; i < eleves.length; i++) {
+    var cle = sansAccents(eleves[i].nom);
+    if (vus[cle]) { UI.toast('Chaque élève doit avoir un nom différent pour lire le verdict.'); return; }
+    vus[cle] = 1;
+  }
+  eleves.forEach(function (e) { ajouterRoster(e.nom, e.classe); });
   S.config.matiereLabel = (matiereParId(S.config.matiereId) || {}).label;
   S.config.classeLabel = (classeParId(S.config.classeId) || {}).label;
+  var vide = function () { return null; };
   S.duel = {
     id: Date.now(),
-    eleves: [{ nom: n1, classe: c1 }, { nom: n2, classe: c2 }],
-    gens: [null, null],
-    i: [0, 0],
-    scores: [0, 0],
-    review: [[], []],
-    timeouts: [0, 0],
-    finis: [false, false],
-    repondu: [false, false],
-    rest: [null, null],
-    etatLocal: [{ ordrePlaces: [] }, { ordrePlaces: [] }],
+    eleves: eleves,
+    gens: eleves.map(vide),
+    i: eleves.map(function () { return 0; }),
+    scores: eleves.map(function () { return 0; }),
+    review: eleves.map(function () { return []; }),
+    timeouts: eleves.map(function () { return 0; }),
+    finis: eleves.map(function () { return false; }),
+    repondu: eleves.map(function () { return false; }),
+    rest: eleves.map(function () { return null; }),
+    etatLocal: eleves.map(function () { return { ordrePlaces: [] }; }),
     int: null,
     leconTitre: null,
     config: JSON.parse(JSON.stringify(S.config)),
@@ -3416,14 +3547,16 @@ Duel.apresConfig = function () {
 Duel.generer = function () {
   var d = S.duel;
   var zone = document.getElementById('zone-duel');
-  zone.innerHTML = '<div class="carte" style="text-align:center;padding:2.4rem 1rem"><p style="font-size:2.4rem">⚔️✨</p><p style="font-weight:800;font-size:1.05rem">Génération des deux questionnaires similaires…</p><p style="color:var(--gris);font-size:.85rem;margin-top:.3rem">Même leçon, même type de jeu — l’un pour la colonne de gauche, l’autre pour la droite.</p></div>';
+  var n = d.eleves.length;
+  zone.innerHTML = '<div class="carte" style="text-align:center;padding:2.4rem 1rem"><p style="font-size:2.4rem">⚔️✨</p><p style="font-weight:800;font-size:1.05rem">Génération des ' + n + ' questionnaires similaires…</p><p style="color:var(--gris);font-size:.85rem;margin-top:.3rem">Même leçon, même type de jeu — une colonne par élève.</p></div>';
   setTimeout(function () {
-    // La leçon commune est tirée UNE seule fois puis imposée aux deux séries
+    // La leçon commune est tirée UNE seule fois puis imposée à toutes les séries
     var rngCommun = creerRng(hacherChaine('duel' + Date.now()));
     d.leconTitre = tirerLeconTitre(d.config, rngCommun);
-    d.gens[0] = genererJeu(d.config, { variante: 1, leconImposee: d.leconTitre });
-    d.gens[1] = genererJeu(d.config, { variante: 2, leconImposee: d.leconTitre });
-    if (!d.gens[0] || !d.gens[1]) {
+    for (var p = 0; p < n; p++) {
+      d.gens[p] = genererJeu(d.config, { variante: p + 1, leconImposee: d.leconTitre });
+    }
+    if (d.gens.some(function (g) { return !g; })) {
       UI.toast('⚠️ Génération impossible pour cette combinaison — change de matière ou de type de jeu.');
       Duel.rendreSetup();
       return;
@@ -3522,14 +3655,13 @@ Duel.rendreModification = function () {
   var zone = document.getElementById('zone-duel');
   var h = '<div class="carte">';
   h += '<div class="carte-titre">✏️ Modifie les questions du duel</div>';
-  h += '<p class="carte-sous">Relis et adapte librement les épreuves des <b>deux</b> questionnaires : énoncés, choix de réponses, bonne réponse, explication. Le nombre d\u2019épreuves reste inchangé. Termine par <b>⚔️ Lancer le duel</b>.</p>';
+  h += '<p class="carte-sous">Relis et adapte librement les épreuves de <b>chaque</b> questionnaire (' + d.eleves.length + ' joueurs) : énoncés, choix de réponses, bonne réponse, explication. Le nombre d\u2019épreuves reste inchangé. Termine par <b>⚔️ Lancer le duel</b>.</p>';
   h += '<div class="rangee-boutons">';
   h += '<button type="button" class="btn btn-primaire btn-bloc" onclick="Duel.demarrer()">⚔️ Lancer le duel</button>';
   h += '<button type="button" class="btn btn-contour btn-bloc" onclick="Duel.generer()">🔄 Régénérer les questions</button>';
   h += '</div>';
   h += '<div class="rangee-boutons"><button type="button" class="btn btn-contour btn-bloc" onclick="Duel.rendreSetup()">⚙️ Changer la configuration</button></div>';
-  h += Duel.htmlEdition(0);
-  h += Duel.htmlEdition(1);
+  for (var pe = 0; pe < d.eleves.length; pe++) h += Duel.htmlEdition(pe);
   h += '<div class="rangee-boutons" style="margin-top:.6rem"><button type="button" class="btn btn-primaire btn-bloc" onclick="Duel.demarrer()">⚔️ Lancer le duel</button></div>';
   h += '</div>';
   zone.innerHTML = h;
@@ -3541,10 +3673,12 @@ Duel.htmlEdition = function (p) {
   var d = S.duel;
   var jeu = d.gens[p].jeu;
   var eleve = d.eleves[p];
-  var cote = p === 0 ? 'GAUCHE' : 'DROITE';
-  var couleur = p === 0 ? 'var(--vert)' : 'var(--or)';
+  var couleursEd = ['var(--vert)', 'var(--or)', '#0284c7', '#e11d48'];
+  var emojisEd = ['🟢', '🟠', '🔵', '🩷'];
+  var cotesEd = ['colonne de GAUCHE', 'colonne de DROITE', 'colonne 3', 'colonne 4'];
+  var couleur = couleursEd[p] || 'var(--vert)';
   var h = '<div class="carte" style="margin-top:.8rem;border-left:4px solid ' + couleur + '">';
-  h += '<div class="carte-titre">' + (p === 0 ? '🟢' : '🟠') + ' Questionnaire de ' + esc(eleve.nom) + ' <small style="color:var(--gris);font-weight:600">· colonne de ' + cote + '</small></div>';
+  h += '<div class="carte-titre">' + (emojisEd[p] || '🟢') + ' Questionnaire de ' + esc(eleve.nom) + ' <small style="color:var(--gris);font-weight:600">· ' + (cotesEd[p] || 'colonne ' + (p + 1)) + '</small></div>';
 
   if (jeu.gameType === 'qcm') {
     jeu.questions.forEach(function (q, qi) {
@@ -3634,10 +3768,10 @@ Duel.htmlEdition = function (p) {
 /** Lance le duel : les épreuves (éventuellement modifiées) commencent. */
 Duel.demarrer = function () {
   var d = S.duel;
-  if (!d || !d.gens[0] || !d.gens[1]) { Duel.rendreSetup(); return; }
-  d.debuts = [Date.now(), Date.now()];
-  d.durees = [null, null];
-  d.finTemps = [null, null];
+  if (!d || d.gens.some(function (g) { return !g; })) { Duel.rendreSetup(); return; }
+  d.debuts = d.eleves.map(function () { return Date.now(); });
+  d.durees = d.eleves.map(function () { return null; });
+  d.finTemps = d.eleves.map(function () { return null; });
   UI.aller('duel');
   Duel.rendre();
 };
@@ -3657,25 +3791,24 @@ Duel.rendre = function () {
   var total = Duel.nbEpreuves();
   var leconTxt = d.leconTitre ? ' · Leçon commune : ' + couper(d.leconTitre, 46) : (d.config.theme ? ' · ' + couper(d.config.theme, 40) : '');
 
-  var h = '<div class="duel-vs"><span class="vs">⚔️ ' + esc(d.eleves[0].nom) + ' vs ' + esc(d.eleves[1].nom) + '</span>';
+  var h = '<div class="duel-vs"><span class="vs">⚔️ ' + d.eleves.map(function (e) { return esc(e.nom); }).join(' vs ') + '</span>';
   h += '<div class="tour">' + esc((matiereParId(d.config.matiereId) || {}).label) + ' · ' + esc((classeParId(d.config.classeId) || {}).label) + ' · ' + (gti ? gti.emoji + ' ' + esc(gti.label) : '') + leconTxt + '</div></div>';
   var leconCommune = d.leconTitre ? leconsDe(d.config.matiereId, d.config.classeId).find(function (l) { return l.titre === d.leconTitre; }) : null;
   h += svgIlluPour(leconCommune, d.config);
 
   h += '<div class="duel-grille">';
-  h += Duel.colonne(0);
-  h += Duel.colonne(1);
+  for (var pc = 0; pc < d.eleves.length; pc++) h += Duel.colonne(pc);
   h += '</div>';
   zone.innerHTML = h;
 
   clearInterval(d.int);
   d.int = setInterval(Duel.tick, 250);
-  [0, 1].forEach(function (p) {
-    d.rest[p] = budgetPour(d.config.gameType, d.config.difficulty);
-    d.repondu[p] = false;
-    d.etatLocal[p] = { ordrePlaces: [] };
-    Duel.tickColonne(p);
-  });
+  for (var pi = 0; pi < d.eleves.length; pi++) {
+    d.rest[pi] = budgetPour(d.config.gameType, d.config.difficulty);
+    d.repondu[pi] = false;
+    d.etatLocal[pi] = { ordrePlaces: [] };
+    Duel.tickColonne(pi);
+  }
 };
 
 Duel.colonne = function (p) {
@@ -3685,8 +3818,10 @@ Duel.colonne = function (p) {
   var eleve = d.eleves[p];
   var total = Duel.nbEpreuves();
   var idx = d.i[p];
-  var cote = p === 0 ? 'gauche' : 'droite';
-  var avatar = p === 0 ? 'avatar-gauche' : 'avatar-droite';
+  var cotesCol = ['gauche', 'droite', 'c3', 'c4'];
+  var avatarsCol = ['avatar-gauche', 'avatar-droite', 'avatar-c3', 'avatar-c4'];
+  var cote = cotesCol[p] || 'gauche';
+  var avatar = avatarsCol[p] || 'avatar-gauche';
   var initiale = (eleve.nom || '?').charAt(0).toUpperCase();
 
   var h = '<div class="colonne-joueur colonne-' + cote + '" id="col-' + p + '">';
@@ -3695,7 +3830,7 @@ Duel.colonne = function (p) {
   h += '<span class="score-colonne" id="score-col-' + p + '">' + d.scores[p] + '</span></div>';
   h += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap">';
   h += '<span class="badge badge-chrono" id="chrono-col-' + p + '"></span>';
-  h += '<span class="badge badge-neutre">' + (p === 0 ? '⬅️ Gauche' : 'Droite ➡️') + '</span></div>';
+  h += '<span class="badge badge-neutre">' + (p === 0 ? '⬅️ Gauche' : p === 1 ? 'Droite ➡️' : 'Colonne ' + (p + 1)) + '</span></div>';
   h += '<div class="barre-chrono" id="barre-col-' + p + '"><div></div></div>';
   h += '<div id="jeu-col-' + p + '">' + Duel.questionHTML(p) + '</div>';
   h += '<div id="fb-col-' + p + '"></div>';
@@ -3784,7 +3919,7 @@ Duel.questionHTML = function (p) {
 
 Duel.tick = function () {
   if (!S.duel) { clearInterval(S.duel && S.duel.int); return; }
-  [0, 1].forEach(function (p) { Duel.tickColonne(p); });
+  for (var p = 0; p < S.duel.eleves.length; p++) Duel.tickColonne(p);
 };
 
 Duel.tickColonne = function (p) {
@@ -4007,9 +4142,12 @@ Duel.suivant = function (p) {
     d.finTemps[p] = Date.now();
     var col = document.getElementById('col-' + p);
     col.classList.add('terminee');
-    document.getElementById('jeu-col-' + p).innerHTML = '<div class="carte-attente"><span class="grand">✅</span><b>' + esc(d.eleves[p].nom) + ' a terminé !</b><br>Score : ' + d.scores[p] + '/' + (d.review[p].length || total) + ' · ⏱ ' + duree(d.durees[p]) + '<br><small>En attente de ' + esc(d.eleves[1 - p].nom) + '…</small></div>';
+    var autres = [];
+    d.eleves.forEach(function (e, k) { if (k !== p && !d.finis[k]) autres.push(e.nom); });
+    var attenteTxt = autres.length ? 'En attente de ' + esc(autres.join(', ')) + '…' : 'Tous les joueurs ont terminé !';
+    document.getElementById('jeu-col-' + p).innerHTML = '<div class="carte-attente"><span class="grand">✅</span><b>' + esc(d.eleves[p].nom) + ' a terminé !</b><br>Score : ' + d.scores[p] + '/' + (d.review[p].length || total) + ' · ⏱ ' + duree(d.durees[p]) + '<br><small>' + attenteTxt + '</small></div>';
     document.getElementById('fb-col-' + p).innerHTML = '';
-    if (d.finis[0] && d.finis[1]) { clearInterval(d.int); d.int = null; setTimeout(Duel.fin, 450); }
+    if (d.finis.every(function (f) { return f; })) { clearInterval(d.int); d.int = null; setTimeout(Duel.fin, 450); }
     return;
   }
   d.i[p]++;
@@ -4023,40 +4161,85 @@ Duel.suivant = function (p) {
   Duel.tickColonne(p);
 };
 
-/* ---------- Fin du duel : VAINQUEUR DU TOURNOI ---------- */
-Duel.gagnant = function () {
+/* ---------- Classement multi-joueurs : points → chrono → ex-aequo ---------- */
+Duel.classement = function () {
   var d = S.duel;
-  var s1 = d.scores[0], s2 = d.scores[1];
-  if (s1 > s2) return { g: 0, dep: false };
-  if (s2 > s1) return { g: 1, dep: false };
-  var t1 = d.durees[0], t2 = d.durees[1];
-  if (t1 != null && t2 != null && t1 !== t2) return { g: t1 < t2 ? 0 : 1, dep: true };
-  return { g: -1, dep: false };
+  var entrees = d.eleves.map(function (e, p) {
+    return { p: p, nom: e.nom, score: d.scores[p], total: d.review[p].length || Duel.nbEpreuves(), duree: d.durees[p], rang: 1, dep: false };
+  });
+  entrees.sort(function (a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    var da = a.duree == null ? Infinity : a.duree;
+    var db = b.duree == null ? Infinity : b.duree;
+    if (da !== db) return da - db;
+    return a.nom.localeCompare(b.nom, 'fr');
+  });
+  var precedent = null;
+  entrees.forEach(function (e, i) {
+    if (precedent == null || precedent.score !== e.score || precedent.duree !== e.duree) {
+      e.rang = i + 1;
+      e.dep = precedent != null && precedent.score === e.score;
+    } else {
+      e.rang = precedent.rang;
+      e.dep = false;
+    }
+    precedent = e;
+  });
+  return entrees;
 };
 
+/** PODIUM — faire le point après le jeu : les 3 MEILLEURS (🥇 🥈 🥉). */
+Duel.podiumHTML = function (classement) {
+  var marches = [
+    { rang: 2, cl: 'p2', med: '🥈', lbl: '2e' },
+    { rang: 1, cl: 'p1', med: '🥇', lbl: '1er' },
+    { rang: 3, cl: 'p3', med: '🥉', lbl: '3e' },
+  ];
+  var h = '<div class="carte podium-carte" style="margin-top:1rem">';
+  h += '<div class="carte-titre" style="text-align:center">🏆 Podium — les 3 meilleurs</div>';
+  h += '<div class="podium">';
+  marches.forEach(function (m) {
+    classement.filter(function (c) { return c.rang === m.rang; }).forEach(function (c) {
+      h += '<div class="podium-marche ' + m.cl + '">';
+      h += '<span class="podium-medaille" aria-hidden="true">' + m.med + '</span>';
+      h += '<span class="podium-nom">' + esc(c.nom) + '</span>';
+      h += '<span class="podium-pts">' + c.score + '/' + c.total + '</span>';
+      h += '<div class="podium-colonne" aria-hidden="true"></div>';
+      h += '<span class="podium-rang">' + m.lbl + '</span>';
+      h += '</div>';
+    });
+  });
+  h += '</div></div>';
+  return h;
+};
+
+/* ---------- Fin du duel : PODIUM DES 3 MEILLEURS + VAINQUEUR ---------- */
 Duel.fin = function () {
   var d = S.duel;
-  var total = Math.max(d.review[0].length, d.review[1].length);
-  var res = Duel.gagnant();
-  var vainqueurNom = res.g >= 0 ? d.eleves[res.g].nom : null;
-  var pct1 = total ? Math.round(d.scores[0] / total * 100) : 0;
-  var pct2 = total ? Math.round(d.scores[1] / total * 100) : 0;
+  var total = Math.max.apply(null, d.review.map(function (r) { return r.length; }));
+  var classement = Duel.classement();
+  var premiers = classement.filter(function (c) { return c.rang === 1; });
+  var vainqueurNom = premiers.length === 1 ? premiers[0].nom : null;
+  var egalite = premiers.length > 1;
+  var departage = classement.some(function (c) { return c.dep; });
 
   // Somme gagnée en FCFA — UNIQUEMENT difficulté Difficile (10 épreuves, 100 %) :
-  // seul le VAINQUEUR du tournoi empoche, sauf égalité parfaite (les deux à 100 %).
-  var gainsFCFA = [0, 0];
+  // le(s) joueur(s) à la 1re place empoche(nt) ; égalité parfaite : chacun empoche.
+  var gainsFCFA = d.eleves.map(function () { return 0; });
   if (d.config.difficulty === 'difficile') {
-    gainsFCFA[0] = Cagnotte.gain('difficile', total, d.scores[0]);
-    gainsFCFA[1] = Cagnotte.gain('difficile', total, d.scores[1]);
-    if (res.g === 0) gainsFCFA[1] = 0;
-    if (res.g === 1) gainsFCFA[0] = 0;
+    classement.forEach(function (c) {
+      if (c.rang === 1) gainsFCFA[c.p] = Cagnotte.gain('difficile', total, d.scores[c.p]);
+    });
     var creditsDuel = [];
-    if (gainsFCFA[0] > 0) creditsDuel.push({ cle: d.eleves[0].nom, montant: gainsFCFA[0] });
-    if (gainsFCFA[1] > 0) creditsDuel.push({ cle: d.eleves[1].nom, montant: gainsFCFA[1] });
+    classement.forEach(function (c) {
+      if (gainsFCFA[c.p] > 0) creditsDuel.push({ cle: d.eleves[c.p].nom, montant: gainsFCFA[c.p] });
+    });
     if (creditsDuel.length) {
-      Cagnotte.crediterDuelUneFois(['duel', d.id, d.eleves[0].nom, d.eleves[1].nom, d.scores[0], d.scores[1]].join('|'), creditsDuel);
+      Cagnotte.crediterDuelUneFois(['duel', d.id].concat(classement.map(function (c) { return d.eleves[c.p].nom + ':' + d.scores[c.p]; })).join('|'), creditsDuel);
     }
   }
+
+  function pct(p) { return total ? Math.round(d.scores[p] / total * 100) : 0; }
 
   S.historique.unshift({
     date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
@@ -4066,65 +4249,75 @@ Duel.fin = function () {
     gameType: d.config.gameType,
     mode: 'duel',
     score: d.scores[0], total: total,
-    pct: pct1,
-    extra: 'vs ' + d.eleves[1].nom + ' (' + d.scores[1] + '/' + total + ')',
+    pct: pct(0),
+    extra: 'vs ' + d.eleves.slice(1).map(function (e, k) { return e.nom + ' (' + d.scores[k + 1] + '/' + total + ')'; }).join(', '),
   });
   S.historique = S.historique.slice(0, 10);
   try { localStorage.setItem(CLE_HISTO, JSON.stringify(S.historique)); } catch (e) {}
 
-  var h = '<div class="banniere-verdict ' + (res.g < 0 ? 'egalite' : 'victoire') + '">';
-  h += '<div class="trophy">' + (res.g < 0 ? '🤝' : '🏆') + '</div>';
-  if (res.g < 0) {
+  // Bannière verdict
+  var h = '<div class="banniere-verdict ' + (egalite ? 'egalite' : 'victoire') + '">';
+  h += '<div class="trophy">' + (egalite ? '🤝' : '🏆') + '</div>';
+  if (egalite) {
     h += '<p class="sur-titre">Fin du tournoi</p><div class="nom-vainqueur" style="color:var(--or)">Égalité parfaite !</div>';
-    h += '<p class="note-egalite">' + esc(d.eleves[0].nom) + ' et ' + esc(d.eleves[1].nom) + ' terminent à égalité : ' + d.scores[0] + ' - ' + d.scores[1] + '. Aucun vainqueur — une revanche s’impose !</p>';
+    h += '<p class="note-egalite">' + esc(premiers.map(function (c) { return c.nom; }).join(' & ')) + ' terminent à la première place : égalité parfaite — une revanche s’impose !</p>';
   } else {
     h += '<p class="sur-titre">Vainqueur du tournoi</p>';
     h += '<div class="nom-vainqueur">👑 ' + esc(vainqueurNom) + '</div>';
-    h += '<p class="note-egalite">Bravo ' + esc(vainqueurNom) + ' ! ' + d.scores[res.g] + '/' + total + ' contre ' + d.scores[1 - res.g] + '/' + total + ' pour ' + esc(d.eleves[1 - res.g].nom) + ' — entraîne-toi et prends ta revanche !</p>';
-    if (res.dep) h += '<div class="note-departage">⚖️ Scores égaux : victoire départagée au chrono le plus court (' + duree(d.durees[res.g]) + ' contre ' + duree(d.durees[1 - res.g]) + ').</div>';
+    h += '<p class="note-egalite">Bravo ' + esc(vainqueurNom) + ' ! ' + d.eleves.length + ' joueurs se sont affrontés — le podium des 3 meilleurs est affiché ci-dessous.</p>';
+    if (departage) h += '<div class="note-departage">⚖️ Scores égaux : victoire départagée au chrono le plus court (' + duree(d.durees[premiers[0].p]) + ').</div>';
   }
   h += '</div>';
 
+  // PODIUM DES 3 MEILLEURS (faire le point après le jeu)
+  h += Duel.podiumHTML(classement);
+
+  // Cartes détaillées, dans l'ordre du classement
+  var avatarsFin = ['avatar-gauche', 'avatar-droite', 'avatar-c3', 'avatar-c4'];
+  var medailles = { 1: '🥇', 2: '🥈', 3: '🥉' };
   h += '<div class="cartes-joueurs-fin">';
-  [0, 1].forEach(function (p) {
-    var estVainqueur = res.g === p;
+  classement.forEach(function (c) {
+    var p = c.p;
+    var estVainqueur = c.rang === 1;
     h += '<div class="carte-fin ' + (estVainqueur ? 'vainqueur' : '') + '">';
     if (estVainqueur) h += '<span class="ruban">🏆 Vainqueur</span>';
-    h += '<div class="avatar-fin ' + (p === 0 ? 'avatar-gauche' : 'avatar-droite') + '">' + esc((d.eleves[p].nom || '?').charAt(0).toUpperCase()) + '</div>';
-    h += '<div class="nom-fin">' + (estVainqueur ? '<span class="couronne">👑</span> ' : '') + esc(d.eleves[p].nom) + (p === 0 ? ' <small style="color:var(--gris)">· gauche</small>' : ' <small style="color:var(--gris)">· droite</small>') + '</div>';
+    h += '<div class="avatar-fin ' + (avatarsFin[p] || 'avatar-gauche') + '">' + esc((d.eleves[p].nom || '?').charAt(0).toUpperCase()) + '</div>';
+    h += '<div class="nom-fin">' + (estVainqueur ? '<span class="couronne">👑</span> ' : (medailles[c.rang] ? medailles[c.rang] + ' ' : '')) + esc(d.eleves[p].nom) + ' <small style="color:var(--gris)">· ' + (c.rang === 1 ? '1er' : c.rang + 'e') + '</small></div>';
     h += '<div class="score-fin">' + d.scores[p] + '<small>/' + total + '</small></div>';
     h += '<div class="details-fin">' + pct(p) + ' % · ⏱ ' + duree(d.durees[p]) + (d.timeouts[p] > 0 ? ' · ⌛ ' + d.timeouts[p] : '') + '</div>';
     if (gainsFCFA[p] > 0) h += '<div class="gain-fin">💰 +' + Cagnotte.fcfa(gainsFCFA[p]) + '</div>';
     h += '</div>';
   });
   h += '</div>';
-  function pct(p) { return total ? Math.round(d.scores[p] / total * 100) : 0; }
 
   // Carte récapitulative des cagnottes FCFA (difficulté Difficile uniquement)
   if (d.config.difficulty === 'difficile') {
-    h += '<div class="carte carte-cagnotte' + (gainsFCFA[0] > 0 || gainsFCFA[1] > 0 ? ' gagnee' : '') + '">';
-    if (gainsFCFA[0] > 0 || gainsFCFA[1] > 0) {
-      h += '<div class="carte-titre">💰 Somme gagnée en FCFA — vainqueur du tournoi</div><ul class="liste-cagnottes">';
-      if (gainsFCFA[0] > 0) h += '<li><b>' + esc(d.eleves[0].nom) + '</b> : +' + Cagnotte.fcfa(gainsFCFA[0]) + ' <small>(cagnotte : ' + Cagnotte.fcfa(Cagnotte.solde(d.eleves[0].nom)) + ')</small></li>';
-      if (gainsFCFA[1] > 0) h += '<li><b>' + esc(d.eleves[1].nom) + '</b> : +' + Cagnotte.fcfa(gainsFCFA[1]) + ' <small>(cagnotte : ' + Cagnotte.fcfa(Cagnotte.solde(d.eleves[1].nom)) + ')</small></li>';
+    var gagnants = classement.filter(function (c) { return gainsFCFA[c.p] > 0; });
+    h += '<div class="carte carte-cagnotte' + (gagnants.length ? ' gagnee' : '') + '">';
+    if (gagnants.length) {
+      h += '<div class="carte-titre">💰 Somme gagnée en FCFA — vainqueur' + (gagnants.length > 1 ? 's' : '') + ' du tournoi</div><ul class="liste-cagnottes">';
+      gagnants.forEach(function (c) {
+        h += '<li><b>' + esc(d.eleves[c.p].nom) + '</b> : +' + Cagnotte.fcfa(gainsFCFA[c.p]) + ' <small>(cagnotte : ' + Cagnotte.fcfa(Cagnotte.solde(d.eleves[c.p].nom)) + ')</small></li>';
+      });
       h += '</ul>';
     } else {
-      h += '<div class="cagnotte-sous" style="padding:.2rem 0">💰 Somme gagnée : ' + Cagnotte.fcfa(0) + ' — la cagnotte de ' + Cagnotte.fcfa(Cagnotte.GAIN) + ' récompense un jeu Difficile de ' + Cagnotte.NB_EPREUVES + ' épreuves réussies à 100 %.</div>';
+      h += '<div class="cagnotte-sous" style="padding:.2rem 0">💰 Somme gagnée : ' + Cagnotte.fcfa(0) + ' — la cagnotte de ' + Cagnotte.fcfa(Cagnotte.GAIN) + ' récompense le vainqueur d’un duel Difficile de ' + Cagnotte.NB_EPREUVES + ' épreuves réussies à 100 %.</div>';
     }
     h += '</div>';
   }
 
-  h += '<div class="carte" style="margin-top:1rem"><div class="carte-titre">📝 Corrections des deux élèves</div>';
-  [0, 1].forEach(function (p) {
+  // Corrections de chaque élève
+  h += '<div class="carte" style="margin-top:1rem"><div class="carte-titre">📝 Corrections de chaque élève</div>';
+  for (var p = 0; p < d.eleves.length; p++) {
     h += '<div class="accordeon' + (p === 0 ? ' ouvert' : '') + '" style="margin-bottom:.5rem">';
-    h += '<button type="button" onclick="UI.basculerAccordeon(this)">' + (p === 0 ? '🟢' : '🟠') + ' Correction de ' + esc(d.eleves[p].nom) + ' — ' + d.scores[p] + '/' + total + '</button><div class="contenu">';
+    h += '<button type="button" onclick="UI.basculerAccordeon(this)">' + (['🟢', '🟠', '🔵', '🩷'][p] || '🟢') + ' Correction de ' + esc(d.eleves[p].nom) + ' — ' + d.scores[p] + '/' + total + '</button><div class="contenu">';
     d.review[p].forEach(function (r, i) {
       h += '<div class="correction-item ' + (r.correct ? 'ok' : 'ko') + '"><b>' + (i + 1) + '. ' + (r.correct ? '✅' : '❌') + ' ' + esc(couper(r.label, 90)) + '</b>';
       h += '<div class="ligne-rep">Réponse : <b>' + esc(couper(r.userAnswer, 60)) + '</b>' + (r.correct ? '' : ' · Bonne réponse : <b>' + esc(couper(r.correctAnswer, 60)) + '</b>') + '</div>';
       if (r.explanation) h += '<div class="explication">💡 ' + esc(r.explanation) + '</div></div>';
     });
     h += '</div></div>';
-  });
+  }
   h += '</div>';
 
   h += '<div id="carte-wa-duel" style="margin-top:1rem"></div>';
@@ -4136,12 +4329,11 @@ Duel.fin = function () {
 
   document.getElementById('zone-duel').innerHTML = h;
   var msgWA = construireMessageDuel(d.config, {
-    j1: { nom: d.eleves[0].nom, score: d.scores[0] },
-    j2: { nom: d.eleves[1].nom, score: d.scores[1] },
+    joueurs: classement.map(function (c) { return { nom: d.eleves[c.p].nom, score: d.scores[c.p] }; }),
     total: total,
-    egalite: res.g < 0,
+    egalite: egalite,
     vainqueurNom: vainqueurNom,
-    departageTemps: res.dep,
+    departageTemps: departage,
     leconTitre: d.leconTitre,
   });
   WhatsApp.carte('carte-wa-duel', msgWA, 'duel');
@@ -4151,13 +4343,20 @@ Duel.fin = function () {
 Duel.revanche = function () {
   var d = S.duel;
   S.config = JSON.parse(JSON.stringify(d.config));
+  var vide = function () { return null; };
+  var faux = function () { return false; };
   S.duel = {
     id: Date.now(),
     eleves: d.eleves.slice(),
-    gens: [null, null],
-    i: [0, 0], scores: [0, 0], review: [[], []], timeouts: [0, 0],
-    finis: [false, false], repondu: [false, false], rest: [null, null],
-    etatLocal: [{ ordrePlaces: [] }, { ordrePlaces: [] }],
+    gens: d.eleves.map(vide),
+    i: d.eleves.map(function () { return 0; }),
+    scores: d.eleves.map(function () { return 0; }),
+    review: d.eleves.map(function () { return []; }),
+    timeouts: d.eleves.map(function () { return 0; }),
+    finis: d.eleves.map(faux),
+    repondu: d.eleves.map(faux),
+    rest: d.eleves.map(vide),
+    etatLocal: d.eleves.map(function () { return { ordrePlaces: [] }; }),
     int: null, leconTitre: null, config: JSON.parse(JSON.stringify(d.config)),
   };
   Duel.generer();
