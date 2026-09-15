@@ -126,6 +126,11 @@ select.champ, input.champ {
   padding: .5rem .8rem; background: #fff; font-size: .95rem; color: var(--encre);
 }
 select.champ:focus, input.champ:focus { outline: none; border-color: var(--vert); }
+textarea.champ { width: 100%; border: 2px solid var(--bordure); border-radius: 12px; padding: .5rem .8rem; background: #fff; font-size: .95rem; color: var(--encre); font-family: inherit; resize: vertical; min-height: 56px; }
+.edit-label { display: block; font-size: .72rem; font-weight: 700; color: var(--gris); margin: .3rem 0 .1rem; }
+.edit-cadre { border: 1px solid var(--bordure); border-radius: 12px; padding: .55rem .7rem; margin: .55rem 0; background: #f8fafc; }
+.edit-titre { font-size: .72rem; font-weight: 800; color: var(--vert-fonce); margin: 0 0 .3rem; }
+.edit-grille { display: grid; gap: .3rem .6rem; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 select.champ { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--gris) 50%), linear-gradient(135deg, var(--gris) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 2.2rem; }
 .plage { display: flex; align-items: center; gap: .8rem; }
 input[type="range"] { flex: 1; accent-color: var(--vert); min-height: 44px; }
@@ -3423,12 +3428,218 @@ Duel.generer = function () {
       Duel.rendreSetup();
       return;
     }
-    d.debuts = [Date.now(), Date.now()];
-    d.durees = [null, null];
-    d.finTemps = [null, null];
+    // Nouveau : l'enseignant relit et adapte les questions AVANT de lancer.
     UI.aller('duel');
-    Duel.rendre();
+    Duel.rendreModification();
   }, 350);
+};
+
+/* ============================================================
+   MODIFICATION DES QUESTIONS DU DUEL (enseignant) — entre la
+   génération et le lancement : l'enseignant relit et adapte
+   chaque épreuve des deux questionnaires (énoncés, choix de
+   réponses, bonne réponse, explication). Le NOMBRE d'épreuves
+   ne change jamais : le barème du duel et la cagnotte (10
+   épreuves en Difficile) restent garantis.
+   ============================================================ */
+
+/** Chemin JS sûr pour les attributs onclick/oninput : ['jeu','questions',0]… */
+function cheminJS(chemin) {
+  return '[' + chemin.map(function (c) { return typeof c === 'number' ? String(c) : "'" + c + "'"; }).join(',') + ']';
+}
+
+// Mutation générique d'un champ du questionnaire : Duel.ed(0,['jeu','questions',2,'question'],valeur)
+Duel.ed = function (p, chemin, valeur) {
+  var d = S.duel;
+  if (!d || !d.gens[p]) return;
+  var obj = d.gens[p];
+  for (var i = 0; i < chemin.length - 1; i++) obj = obj[chemin[i]];
+  obj[chemin[chemin.length - 1]] = valeur;
+};
+
+// Variante numérique (bonne réponse = index du choix).
+Duel.edNum = function (p, chemin, valeur) {
+  var n = parseInt(valeur, 10);
+  Duel.ed(p, chemin, isNaN(n) ? 0 : n);
+};
+
+// Option d'un trou (texte à trous) : si l'option modifiée ÉTAIT la bonne
+// réponse, la bonne réponse suit automatiquement ; le select est reconstruit.
+Duel.edTrouOption = function (p, bi, oi, valeur) {
+  var d = S.duel;
+  if (!d || !d.gens[p]) return;
+  var bl = d.gens[p].jeu.texte.blanks[bi];
+  var ancien = bl.options[oi];
+  bl.options[oi] = valeur;
+  if (bl.answer === ancien) bl.answer = valeur;
+  var sel = document.getElementById('trou-rep-' + p + '-' + bi);
+  if (sel) {
+    sel.innerHTML = bl.options.map(function (o) {
+      return '<option value="' + esc(o) + '"' + (o === bl.answer ? ' selected' : '') + '>' + esc(couper(o, 60)) + '</option>';
+    }).join('');
+  }
+};
+
+// Énoncé d'un QCM : si l'illustration décorative était dérivée de l'ancien
+// énoncé, on la remet à zéro — elle sera recalculée depuis le nouveau texte.
+Duel.edQCMQuestion = function (p, qi, valeur) {
+  var d = S.duel;
+  if (!d || !d.gens[p]) return;
+  var q = d.gens[p].jeu.questions[qi];
+  q.question = valeur;
+  if ('illu' in q) q.illu = null;
+};
+
+/** Champ texte éditable (genre : 'input' une ligne, 'textarea' multi-lignes). */
+Duel.champTexte = function (p, chemin, label, valeur, genre) {
+  var attrs = 'oninput="Duel.ed(' + p + ',' + cheminJS(chemin) + ',this.value)"';
+  var champ = genre === 'textarea'
+    ? '<textarea class="champ" rows="2" ' + attrs + '>' + esc(valeur) + '</textarea>'
+    : '<input class="champ" style="min-height:42px" maxlength="300" value="' + esc(valeur) + '" ' + attrs + '>';
+  return '<label class="edit-label">' + esc(label) + champ + '</label>';
+};
+
+/** Liste déroulante d'un index numérique (bonne réponse d'un QCM / SP). */
+Duel.champChoixIndex = function (p, chemin, label, options, valeur) {
+  var h = '<label class="edit-label">' + esc(label);
+  h += '<select class="champ" style="min-height:42px" onchange="Duel.edNum(' + p + ',' + cheminJS(chemin) + ',this.value)">';
+  options.forEach(function (o) {
+    h += '<option value="' + esc(o.v) + '"' + (String(o.v) === String(valeur) ? ' selected' : '') + '>' + esc(o.t) + '</option>';
+  });
+  h += '</select></label>';
+  return h;
+};
+
+/** Cadre d'une épreuve éditable. */
+Duel.cadreEdition = function (numero, type, contenu) {
+  return '<div class="edit-cadre"><p class="edit-titre">Épreuve ' + numero + ' · ' + esc(type) + '</p>' + contenu + '</div>';
+};
+
+/** Écran « modification » : les 2 questionnaires éditables côte à côte (empilés sur mobile). */
+Duel.rendreModification = function () {
+  var d = S.duel;
+  clearInterval(d.int);
+  var zone = document.getElementById('zone-duel');
+  var h = '<div class="carte">';
+  h += '<div class="carte-titre">✏️ Modifie les questions du duel</div>';
+  h += '<p class="carte-sous">Relis et adapte librement les épreuves des <b>deux</b> questionnaires : énoncés, choix de réponses, bonne réponse, explication. Le nombre d\u2019épreuves reste inchangé. Termine par <b>⚔️ Lancer le duel</b>.</p>';
+  h += '<div class="rangee-boutons">';
+  h += '<button type="button" class="btn btn-primaire btn-bloc" onclick="Duel.demarrer()">⚔️ Lancer le duel</button>';
+  h += '<button type="button" class="btn btn-contour btn-bloc" onclick="Duel.generer()">🔄 Régénérer les questions</button>';
+  h += '</div>';
+  h += '<div class="rangee-boutons"><button type="button" class="btn btn-contour btn-bloc" onclick="Duel.rendreSetup()">⚙️ Changer la configuration</button></div>';
+  h += Duel.htmlEdition(0);
+  h += Duel.htmlEdition(1);
+  h += '<div class="rangee-boutons" style="margin-top:.6rem"><button type="button" class="btn btn-primaire btn-bloc" onclick="Duel.demarrer()">⚔️ Lancer le duel</button></div>';
+  h += '</div>';
+  zone.innerHTML = h;
+  window.scrollTo({ top: 0 });
+};
+
+/** Bloc d'édition d'un questionnaire (p = 0 gauche, 1 droite). */
+Duel.htmlEdition = function (p) {
+  var d = S.duel;
+  var jeu = d.gens[p].jeu;
+  var eleve = d.eleves[p];
+  var cote = p === 0 ? 'GAUCHE' : 'DROITE';
+  var couleur = p === 0 ? 'var(--vert)' : 'var(--or)';
+  var h = '<div class="carte" style="margin-top:.8rem;border-left:4px solid ' + couleur + '">';
+  h += '<div class="carte-titre">' + (p === 0 ? '🟢' : '🟠') + ' Questionnaire de ' + esc(eleve.nom) + ' <small style="color:var(--gris);font-weight:600">· colonne de ' + cote + '</small></div>';
+
+  if (jeu.gameType === 'qcm') {
+    jeu.questions.forEach(function (q, qi) {
+      var contenu = '<label class="edit-label">Question<textarea class="champ" rows="2" oninput="Duel.edQCMQuestion(' + p + ',' + qi + ',this.value)">' + esc(q.question) + '</textarea></label>';
+      contenu += '<div class="edit-grille">' + q.options.map(function (opt, oi) {
+        return Duel.champTexte(p, ['jeu', 'questions', qi, 'options', oi], 'Choix ' + String.fromCharCode(65 + oi), opt, 'input');
+      }).join('') + '</div>';
+      contenu += Duel.champChoixIndex(p, ['jeu', 'questions', qi, 'correctIndex'], 'Bonne réponse', q.options.map(function (opt, oi) {
+        return { v: oi, t: String.fromCharCode(65 + oi) + ' — ' + couper(opt, 60) };
+      }), q.correctIndex);
+      contenu += Duel.champTexte(p, ['jeu', 'questions', qi, 'explanation'], 'Explication (correction)', q.explanation, 'input');
+      h += Duel.cadreEdition(qi + 1, 'QCM', contenu);
+    });
+  } else if (jeu.gameType === 'vrai_faux') {
+    jeu.questions.forEach(function (q, qi) {
+      var cheminRep = cheminJS(['jeu', 'questions', qi, 'answer']);
+      var contenu = Duel.champTexte(p, ['jeu', 'questions', qi, 'statement'], 'Affirmation', q.statement, 'textarea');
+      contenu += '<label class="edit-label">Bonne réponse<select class="champ" style="min-height:42px" onchange="Duel.ed(' + p + ',' + cheminRep + ',this.value)">';
+      contenu += '<option value="vrai"' + (q.answer === 'vrai' ? ' selected' : '') + '>✔️ Vrai</option>';
+      contenu += '<option value="faux"' + (q.answer === 'faux' ? ' selected' : '') + '>✖️ Faux</option>';
+      contenu += '</select></label>';
+      contenu += Duel.champTexte(p, ['jeu', 'questions', qi, 'explanation'], 'Explication (correction)', q.explanation, 'input');
+      h += Duel.cadreEdition(qi + 1, 'Vrai ou Faux', contenu);
+    });
+  } else if (jeu.gameType === 'association') {
+    var c0 = Duel.champTexte(p, ['jeu', 'description'], 'Consigne de l\u2019épreuve', jeu.description, 'input');
+    jeu.pairs.forEach(function (pr, pi) {
+      c0 += Duel.cadreEdition(pi + 1, 'Paire',
+        '<div class="edit-grille">' +
+        Duel.champTexte(p, ['jeu', 'pairs', pi, 'left'], 'Élément de gauche', pr.left, 'input') +
+        Duel.champTexte(p, ['jeu', 'pairs', pi, 'right'], 'Élément de droite (associé)', pr.right, 'input') +
+        '</div>');
+    });
+    h += c0;
+  } else if (jeu.gameType === 'ordre') {
+    jeu.sequences.forEach(function (seq, si) {
+      var contenu = Duel.champTexte(p, ['jeu', 'sequences', si, 'title'], 'Titre de la séquence', seq.title, 'input');
+      contenu += '<div class="edit-grille">' + seq.steps.map(function (step, ei) {
+        return Duel.champTexte(p, ['jeu', 'sequences', si, 'steps', ei], 'Étape ' + (ei + 1) + ' (bon ordre)', step, 'input');
+      }).join('') + '</div>';
+      contenu += Duel.champTexte(p, ['jeu', 'sequences', si, 'explanation'], 'Explication (correction)', seq.explanation, 'input');
+      h += Duel.cadreEdition(si + 1, 'Remise en ordre', contenu);
+    });
+  } else if (jeu.gameType === 'texte_trous') {
+    var ct = '<p class="edit-titre">Texte et trous (dans l\u2019ordre de lecture)</p>';
+    jeu.texte.segments.forEach(function (seg, si) {
+      if (seg.type === 'txt') {
+        ct += Duel.champTexte(p, ['jeu', 'texte', 'segments', si, 't'], 'Texte', seg.t, 'textarea');
+      } else {
+        var bi = seg.n;
+        var bl = jeu.texte.blanks[bi];
+        ct += '<div class="edit-cadre" style="background:#ecfdf5"><p class="edit-titre">Trou n°' + (bi + 1) + '</p>';
+        ct += '<label class="edit-label">Bonne réponse<select class="champ" style="min-height:42px" id="trou-rep-' + p + '-' + bi + '" onchange="Duel.ed(' + p + ',' + cheminJS(['jeu', 'texte', 'blanks', bi, 'answer']) + ',this.value)">';
+        bl.options.forEach(function (o) {
+          ct += '<option value="' + esc(o) + '"' + (o === bl.answer ? ' selected' : '') + '>' + esc(couper(o, 60)) + '</option>';
+        });
+        ct += '</select></label>';
+        ct += '<div class="edit-grille">' + bl.options.map(function (o, oi) {
+          return '<label class="edit-label">Proposition ' + (oi + 1) + '<input class="champ" style="min-height:42px" maxlength="300" value="' + esc(o) + '" oninput="Duel.edTrouOption(' + p + ',' + bi + ',' + oi + ',this.value)"></label>';
+        }).join('') + '</div>';
+        ct += Duel.champTexte(p, ['jeu', 'texte', 'blanks', bi, 'hint'], 'Indice affiché (facultatif)', bl.hint || '', 'input');
+        ct += '</div>';
+      }
+    });
+    ct += Duel.champTexte(p, ['jeu', 'texte', 'explanation'], 'Explication (correction)', jeu.texte.explanation || '', 'input');
+    h += ct;
+  } else if (jeu.gameType === 'situation_probleme') {
+    var cs = Duel.champTexte(p, ['jeu', 'situation'], '📌 Situation (contexte, données, défi)', jeu.situation, 'textarea');
+    cs += Duel.champTexte(p, ['jeu', 'competence'], '🎯 Compétence APC visée', jeu.competence || '', 'input');
+    h += cs;
+    jeu.etapes.forEach(function (et, ei) {
+      var contenu = Duel.champTexte(p, ['jeu', 'etapes', ei, 'consigne'], 'Consigne', et.consigne, 'textarea');
+      contenu += '<div class="edit-grille">' + et.options.map(function (opt, oi) {
+        return Duel.champTexte(p, ['jeu', 'etapes', ei, 'options', oi], 'Choix ' + String.fromCharCode(65 + oi), opt, 'input');
+      }).join('') + '</div>';
+      contenu += Duel.champChoixIndex(p, ['jeu', 'etapes', ei, 'correctIndex'], 'Bonne réponse', et.options.map(function (opt, oi) {
+        return { v: oi, t: String.fromCharCode(65 + oi) + ' — ' + couper(opt, 60) };
+      }), et.correctIndex);
+      contenu += Duel.champTexte(p, ['jeu', 'etapes', ei, 'explanation'], 'Explication (correction)', et.explanation, 'input');
+      h += Duel.cadreEdition(ei + 1, 'Consigne', contenu);
+    });
+  }
+  h += '</div>';
+  return h;
+};
+
+/** Lance le duel : les épreuves (éventuellement modifiées) commencent. */
+Duel.demarrer = function () {
+  var d = S.duel;
+  if (!d || !d.gens[0] || !d.gens[1]) { Duel.rendreSetup(); return; }
+  d.debuts = [Date.now(), Date.now()];
+  d.durees = [null, null];
+  d.finTemps = [null, null];
+  UI.aller('duel');
+  Duel.rendre();
 };
 
 Duel.nbEpreuves = function () {
