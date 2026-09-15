@@ -1754,6 +1754,52 @@ function tirerLeconTitre(config, rng) {
   return choisir(rng || Math.random.bind(Math), lecons).titre;
 }
 
+/* ---------- Porte anti-doublons (options/énoncés identiques) ---------- */
+// Deux options indiscernables pour l'élève rendent une question injuste ou
+// inexploitable : toute question/étape/séquence concernée est retirée ; si le
+// jeu tombe sous le minimum, la banque de secours prend le relais.
+function cleCompacte(s) {
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/²/g, '2').replace(/³/g, '3').replace(/¹/g, '1')
+    .replace(/(\d)[,.](\d)/g, '$1d$2')
+    .replace(/[\s.,;:!?«»"'’“”()\[\]{}…_\-–—]/g, '').trim();
+}
+function avecDoublons(liste) {
+  var vus = {};
+  var cles = (liste || []).map(cleCompacte).filter(function (c) { return c; });
+  for (var i = 0; i < cles.length; i++) {
+    if (vus[cles[i]]) return true;
+    vus[cles[i]] = 1;
+  }
+  return false;
+}
+function porteAntiDoublons(jeu) {
+  if (!jeu) return false;
+  if (jeu.gameType === 'qcm' && jeu.questions) {
+    jeu.questions = jeu.questions.filter(function (q) { return !avecDoublons(q.options); });
+    return jeu.questions.length >= 3;
+  }
+  if (jeu.gameType === 'situation_probleme' && jeu.etapes) {
+    jeu.etapes = jeu.etapes.filter(function (e) { return !avecDoublons(e.options); });
+    return jeu.etapes.length >= 3;
+  }
+  if (jeu.gameType === 'ordre' && jeu.sequences) {
+    jeu.sequences = jeu.sequences.filter(function (s) { return !avecDoublons(s.steps); });
+    return jeu.sequences.length >= 1;
+  }
+  if (jeu.gameType === 'vrai_faux' && jeu.questions) {
+    var vus = {}, restent = [];
+    jeu.questions.forEach(function (q) {
+      var k = cleCompacte(q.statement);
+      if (!vus[k]) { vus[k] = 1; restent.push(q); }
+    });
+    jeu.questions = restent;
+    return jeu.questions.length >= 3;
+  }
+  return true; // association (dédupliquée à la source), texte_trous (une réponse par trou)
+}
+
 /**
  * Génère un jeu complet. leconImposee : titre de leçon déjà résolu (duel —
  * garantit le MÊME thème/leçon pour les deux joueurs).
@@ -1777,12 +1823,17 @@ function genererJeu(config, options) {
     else if (gt === 'texte_trous') jeu = { gameType: 'texte_trous', titre: 'Texte à trous', description: 'Complète le texte avec les bons mots.', texte: genererTrous_(config.count, lecon, config, rng) };
     else if (gt === 'situation_probleme') { var sp = genererSituation_(config.count, lecon, config, rng); if (sp) jeu = { gameType: 'situation_probleme', titre: 'Situation-problème', description: 'Un problème concret avec des consignes à la suite.', situation: sp.situation, competence: sp.competence, etapes: sp.etapes, illu: sp.illu }; }
     // Qualité minimale : QCM/VF < 3 questions ou aucun contenu → banque de secours
+    // + PORTE ANTI-DOUBLONS : options/étapes/énoncés identiques = jeu rejeté
+    if (jeu && !porteAntiDoublons(jeu)) jeu = null;
     if (jeu && ((jeu.questions && jeu.questions.length < 3) || (jeu.pairs && jeu.pairs.length === 0) || (jeu.sequences && jeu.sequences.length === 0) || (jeu.texte && jeu.texte.blanks.length < 2))) jeu = null;
   }
 
   if (!jeu) {
     jeu = genererDepuisBanque(config, rng);
-    if (jeu) lecon = null;
+    if (jeu) {
+      lecon = null;
+      if (!porteAntiDoublons(jeu)) jeu = null;
+    }
   }
   if (!jeu) return null;
 
